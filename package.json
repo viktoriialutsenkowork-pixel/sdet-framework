@@ -4,8 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
-    "test ui": "playwright test --ui",
-    "typecheck": "tsc --noEmit"
+    "test:ui": "playwright test --ui",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",
@@ -15,6 +17,7 @@
   "devDependencies": {
     "@playwright/test": "^1.65.1",
     "@types/node": "^26.6.6",
+    "prettier": "^3.10.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
