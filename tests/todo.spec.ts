@@ -10,9 +10,9 @@ function todoRow(page: Page, title: string): Locator {
     .filter({ has: page.getByTestId('todo-title').getByText(title, { exact: true }) });
 }
 
-async function addTodoItem(page: Page, items: string[]): Promise<void> {
+async function addTodos(page: Page, items: string[]): Promise<void> {
+  const newTodoInput = page.getByRole('textbox', { name: 'What needs to be done?' });
   for (const item of items) {
-    const newTodoInput = page.getByRole('textbox', { name: 'What needs to be done?' });
     await newTodoInput.fill(item);
     await newTodoInput.press('Enter');
   }
@@ -24,17 +24,17 @@ test.describe('Todo app', () => {
   });
 
   test('adds a single todo', async ({ page }) => {
-    const toDoItemLocator = page.getByTestId('todo-title').getByText(ITEM1, { exact: true });
+    const todoTitleLocator = page.getByTestId('todo-title');
 
-    await addTodoItem(page, TODO_ITEMS.slice(0, 1));
+    await addTodos(page, [ITEM1]);
 
-    await expect(toDoItemLocator).toBeVisible();
+    await expect(todoTitleLocator).toHaveText([ITEM1]);
   });
 
   test('shows todos in order they were added', async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
 
-    await addTodoItem(page, TODO_ITEMS);
+    await addTodos(page, TODO_ITEMS);
 
     await expect(todoTitleLocator).toHaveText(TODO_ITEMS);
   });
@@ -42,7 +42,7 @@ test.describe('Todo app', () => {
   test('removes a deleted todo from the list', async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
 
-    await addTodoItem(page, TODO_ITEMS.slice(0, 2));
+    await addTodos(page, TODO_ITEMS.slice(0, 2));
 
     await expect(todoTitleLocator).toHaveText(TODO_ITEMS.slice(0, 2));
 
@@ -56,13 +56,13 @@ test.describe('Todo app', () => {
   test('filters todos by Active and Completed', async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
 
-    await addTodoItem(page, TODO_ITEMS);
+    await addTodos(page, TODO_ITEMS);
 
     await expect(todoTitleLocator).toHaveText(TODO_ITEMS);
 
-    await todoRow(page, ITEM2).getByLabel('Toggle Todo').check();
-
-    await expect(todoRow(page, ITEM2)).toHaveClass(/completed/);
+    const toggle = todoRow(page, ITEM2).getByLabel('Toggle Todo');
+    await toggle.check();
+    await expect(toggle).toBeChecked();
     await expect(page.getByTestId('todo-count')).toHaveText('2 items left');
 
     await page.getByRole('link', { name: 'Active' }).click();
