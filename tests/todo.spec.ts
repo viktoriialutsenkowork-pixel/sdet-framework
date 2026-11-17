@@ -71,4 +71,11 @@ test.describe('Todo app', () => {
     await page.getByRole('link', { name: 'Completed' }).click();
     await expect(todoTitleLocator).toHaveText([ITEM2]);
   });
+
+  test('clears completed todos', async ({ page }) => {
+    await addTodos(page, TODO_ITEMS);
+    await todoRow(page, ITEM1).getByLabel('Toggle Todo').check();
+    await page.getByRole('button', { name: 'Clear completed' }).click();
+    await expect(page.getByTestId('todo-title')).toHaveText([ITEM2, ITEM3]);
+  });
 });
