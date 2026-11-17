@@ -25,25 +25,19 @@ test.describe('Todo app', () => {
 
   test('adds a single todo', async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
-
     await addTodos(page, [ITEM1]);
-
     await expect(todoTitleLocator).toHaveText([ITEM1]);
   });
 
   test('shows todos in order they were added', async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
-
     await addTodos(page, TODO_ITEMS);
-
     await expect(todoTitleLocator).toHaveText(TODO_ITEMS);
   });
 
   test('removes a deleted todo from the list', async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
-
     await addTodos(page, TODO_ITEMS.slice(0, 2));
-
     await expect(todoTitleLocator).toHaveText(TODO_ITEMS.slice(0, 2));
 
     const row = todoRow(page, ITEM1);
@@ -55,9 +49,7 @@ test.describe('Todo app', () => {
 
   test('filters todos by Active and Completed', async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
-
     await addTodos(page, TODO_ITEMS);
-
     await expect(todoTitleLocator).toHaveText(TODO_ITEMS);
 
     const toggle = todoRow(page, ITEM2).getByLabel('Toggle Todo');
@@ -73,9 +65,12 @@ test.describe('Todo app', () => {
   });
 
   test('clears completed todos', async ({ page }) => {
+    const todoTitleLocator = page.getByTestId('todo-title');
     await addTodos(page, TODO_ITEMS);
+    await expect(todoTitleLocator).toHaveText(TODO_ITEMS);
+
     await todoRow(page, ITEM1).getByLabel('Toggle Todo').check();
     await page.getByRole('button', { name: 'Clear completed' }).click();
-    await expect(page.getByTestId('todo-title')).toHaveText([ITEM2, ITEM3]);
+    await expect(todoTitleLocator).toHaveText([ITEM2, ITEM3]);
   });
 });
