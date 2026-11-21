@@ -3,8 +3,7 @@ const ITEM1 = 'Item 1';
 const ITEM2 = 'Item 2';
 const ITEM3 = 'Item 3';
 const TODO_ITEMS = [ITEM1, ITEM2, ITEM3];
-const FILTERS = ['All', 'Active', 'Completed'] as const;
-type Filter = (typeof FILTERS)[number];
+type Filter = 'All' | 'Active' | 'Completed';
 type FilterCase = {
   startFilter: Filter;
   checkedFilter: Filter;
