@@ -3,6 +3,18 @@ const ITEM1 = 'Item 1';
 const ITEM2 = 'Item 2';
 const ITEM3 = 'Item 3';
 const TODO_ITEMS = [ITEM1, ITEM2, ITEM3];
+const FILTERS = ['All', 'Active', 'Completed'] as const;
+type Filter = (typeof FILTERS)[number];
+type FilterCase = {
+  startFilter: Filter;
+  checkedFilter: Filter;
+  expected: string[];
+};
+const FILTER_CASES: FilterCase[] = [
+  { startFilter: 'Active', checkedFilter: 'All', expected: TODO_ITEMS },
+  { startFilter: 'Completed', checkedFilter: 'Active', expected: [ITEM1, ITEM3] },
+  { startFilter: 'All', checkedFilter: 'Completed', expected: [ITEM2] },
+];
 
 function todoRow(page: Page, title: string): Locator {
   return page
@@ -16,6 +28,10 @@ async function addTodos(page: Page, items: string[]): Promise<void> {
     await newTodoInput.fill(item);
     await newTodoInput.press('Enter');
   }
+}
+
+async function selectFilter(page: Page, filter: Filter): Promise<void> {
+  await page.getByRole('link', { name: filter, exact: true }).click();
 }
 
 test.describe('Todo app', () => {
@@ -47,22 +63,29 @@ test.describe('Todo app', () => {
     await expect(todoTitleLocator).toHaveText([ITEM2]);
   });
 
-  test('filters todos by Active and Completed', async ({ page }) => {
-    const todoTitleLocator = page.getByTestId('todo-title');
+  test('updates the items left counter when a todo is completed', async ({ page }) => {
     await addTodos(page, TODO_ITEMS);
-    await expect(todoTitleLocator).toHaveText(TODO_ITEMS);
+    await expect(page.getByTestId('todo-count')).toHaveText('3 items left');
 
-    const toggle = todoRow(page, ITEM2).getByLabel('Toggle Todo');
-    await toggle.check();
-    await expect(toggle).toBeChecked();
+    await todoRow(page, ITEM2).getByLabel('Toggle Todo').check();
     await expect(page.getByTestId('todo-count')).toHaveText('2 items left');
-
-    await page.getByRole('link', { name: 'Active' }).click();
-    await expect(todoTitleLocator).toHaveText([ITEM1, ITEM3]);
-
-    await page.getByRole('link', { name: 'Completed' }).click();
-    await expect(todoTitleLocator).toHaveText([ITEM2]);
   });
+
+  for (const filterCase of FILTER_CASES) {
+    test(`'${filterCase.checkedFilter}' filter shows the matching todos`, async ({ page }) => {
+      const todoTitleLocator = page.getByTestId('todo-title');
+      await addTodos(page, TODO_ITEMS);
+      await expect(todoTitleLocator).toHaveText(TODO_ITEMS);
+
+      const toggle = todoRow(page, ITEM2).getByLabel('Toggle Todo');
+      await toggle.check();
+      await expect(toggle).toBeChecked();
+
+      await selectFilter(page, filterCase.startFilter);
+      await selectFilter(page, filterCase.checkedFilter);
+      await expect(todoTitleLocator).toHaveText(filterCase.expected);
+    });
+  }
 
   test('clears completed todos', async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
