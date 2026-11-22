@@ -45,3 +45,45 @@
 ### Interview score: 10/25
 - Q1 waits: 3 · Q2 locator vs handle: 1 · Q3 getByRole: 3 · Q4 forEach async: 1 · Senior: 2
 - Details: `docs/interview-qa.md`
+
+## Day 2 — Debugging tools, locators on a real app, TypeScript types (17–22 Nov 2026)
+
+### Done
+- Debugging tools: UI mode, trace viewer, Inspector, page.pause()
+- TodoMVC: clear completed test, data-driven filter tests, counter test
+- Toolshop: search, category filter, add to cart, data-driven price sorting
+- Helpers: searchFor, expectOnlyProductsMatching, sortBy, getAllProductPrices
+
+### Key learnings
+- Never fix a failure before the trace explains it
+- Old-state trap: an assertion must not be able to pass against the page *before* the action
+- Read changing values inside expect.poll; a value read once goes stale
+- Shape polled values for the failure message: return the problems, expect []
+- Click by what makes an element right (name), not by position (.first())
+- Assert only on stable parts of text (not "products" vs "product")
+- Union types catch typos at compile time; `as const` only when the values are needed at runtime
+- Data-driven tests: one generated test per case, unique names, different behavior per case
+- forEach and sort traps: forEach discards results (use map); sort() sorts as text and mutates
+
+### Debug reports
+- Clear completed: test bug, not app bug — expected the wrong item to be removed
+- Cart test race 1: clicked before search results replaced the home page list → poll for matching products
+- Cart test race 2: product page URL reached before content loaded → wait for the level-1 heading
+- WebKit freeze: trace screencast stopped producing frames; environment issue, test unchanged
+- Rare search flake: 1 in ~100 runs, not reproducible; traces now kept on failure
+
+### Review findings
+- Assertions that couldn't fail (expect.poll without await or matcher)
+- Old-state traps in several tests
+- Hard-coded data from today's demo state (result count)
+- Comments that didn't match the code
+- Submissions without test output
+
+### Weak spots
+- Async/array methods (map, flatMap, filter) — improving
+- `as const` vs plain union: *when* to use each
+- Interview answers: say *when*, and give plans over time for process questions
+
+### Scores
+- Warm-up: 21/25
+- Interview: 17/30 (Q7 4, Q8 3, Q9 3, Q10 2, Q11 3, Senior 2)
