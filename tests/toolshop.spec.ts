@@ -1,6 +1,26 @@
 import { test, expect, type Page } from '@playwright/test';
 
 test.use({ testIdAttribute: 'data-test' });
+type SortOption = 'Price (High - Low)' | 'Price (Low - High)';
+type SortDirection = 'asc' | 'desc';
+type SortOptionCase = {
+  sortOption: SortOption;
+  direction: SortDirection;
+};
+const SORT_OPTION_CASES: SortOptionCase[] = [
+  { sortOption: 'Price (High - Low)', direction: 'desc' },
+  { sortOption: 'Price (Low - High)', direction: 'asc' },
+];
+
+async function sortBy(page: Page, option: SortOption): Promise<void> {
+  const sortDropdown = page.getByLabel('sort'); // the sort <select> has an accessible label "sort"
+  await sortDropdown.selectOption(option);
+}
+
+async function getAllProductPrices(page: Page): Promise<number[]> {
+  const productPrices = await page.getByTestId('product-price').allTextContents();
+  return productPrices.map((productPrice) => Number(productPrice.trim().replace('$', '')));
+}
 
 async function searchFor(page: Page, searchWord: string): Promise<void> {
   const searchInput = page.getByRole('textbox', { name: 'Search' });
@@ -19,9 +39,7 @@ async function expectOnlyProductsMatching(page: Page, text: string): Promise<voi
       const names = (await productNames.allTextContents()).map((name) => name.trim());
       return {
         hasProducts: names.length > 0,
-        nonMatchingNames: names.filter(
-          (name) => !name.toLowerCase().includes(text.toLowerCase()),
-        ),
+        nonMatchingNames: names.filter((name) => !name.toLowerCase().includes(text.toLowerCase())),
       };
     })
     .toEqual({ hasProducts: true, nonMatchingNames: [] });
@@ -69,4 +87,27 @@ test.describe('Toolshop', () => {
     await addToCartButton.click();
     await expect(cartQuantity).toHaveText('1');
   });
+
+  for (const sortCase of SORT_OPTION_CASES) {
+    test(`'${sortCase.sortOption}' sorts products by price`, async ({ page }) => {
+      await sortBy(page, sortCase.sortOption);
+      // The default product order is not sorted by price, so this can only pass
+      // after sorting has been applied.
+      await expect
+        .poll(async () => {
+          const prices = await getAllProductPrices(page);
+          return {
+            hasPrices: prices.length > 0,
+            invalidPrices: prices.filter((price) => Number.isNaN(price)),
+            outOfOrderPrices: prices.flatMap((price, i) => {
+              if (i === 0) return [];
+              const prev = prices[i - 1]!;
+              const inOrder = sortCase.direction === 'asc' ? prev <= price : prev >= price;
+              return inOrder ? [] : [`${prev} -> ${price}`];
+            }),
+          };
+        })
+        .toEqual({ hasPrices: true, invalidPrices: [], outOfOrderPrices: [] });
+    });
+  }
 });
