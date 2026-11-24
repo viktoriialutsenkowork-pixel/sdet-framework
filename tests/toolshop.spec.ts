@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type Response } from '@playwright/test';
 
 test.use({ testIdAttribute: 'data-test' });
 type SortOption = 'Price (High - Low)' | 'Price (Low - High)';
@@ -13,8 +13,16 @@ const SORT_OPTION_CASES: SortOptionCase[] = [
 ];
 
 async function sortBy(page: Page, option: SortOption): Promise<void> {
-  const sortDropdown = page.getByLabel('sort'); // the sort <select> has an accessible label "sort"
+  // the sort <select> has an accessible label "sort"
+  const sortDropdown = page.getByLabel('sort');
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === '/products' &&
+      response.request().method() === 'QUERY' &&
+      response.request().postDataJSON()?.sort !== undefined,
+  );
   await sortDropdown.selectOption(option);
+  await expectOkResponse(responsePromise);
 }
 
 async function getAllProductPrices(page: Page): Promise<number[]> {
@@ -28,7 +36,13 @@ async function searchFor(page: Page, searchWord: string): Promise<void> {
   const searchResultCountLabel = page.getByTestId('search-result-count'); //found by id as no role/label/placeholder can be used here
 
   await searchInput.fill(searchWord);
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === '/products/search' &&
+      response.request().method() === 'QUERY',
+  );
   await searchButton.click();
+  await expectOkResponse(responsePromise);
   await expect(searchResultCountLabel).toContainText(`found for '${searchWord}'`);
 }
 
@@ -45,9 +59,19 @@ async function expectOnlyProductsMatching(page: Page, text: string): Promise<voi
     .toEqual({ hasProducts: true, nonMatchingNames: [] });
 }
 
+async function expectOkResponse(responsePromise: Promise<Response>): Promise<void> {
+  const response = await responsePromise;
+  expect(response.status(), `${response.request().method()} ${response.url()}`).toBe(200);
+}
+
 test.describe('Toolshop', () => {
   test.beforeEach('open app', async ({ page }) => {
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/products' && response.request().method() === 'QUERY',
+    );
     await page.goto('https://practicesoftwaretesting.com');
+    await expectOkResponse(responsePromise);
   });
 
   test('shows matching products when searching by name', async ({ page }) => {
