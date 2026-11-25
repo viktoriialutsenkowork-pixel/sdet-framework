@@ -19,7 +19,7 @@ async function sortBy(page: Page, option: SortOption): Promise<void> {
     (response) =>
       new URL(response.url()).pathname === '/products' &&
       response.request().method() === 'QUERY' &&
-      response.request().postDataJSON()?.sort !== undefined,
+      response.request().postData()?.includes('"sort"') === true,
   );
   await sortDropdown.selectOption(option);
   await expectOkResponse(responsePromise);
