@@ -1,6 +1,6 @@
 import { test, expect, type Page, type Response } from '@playwright/test';
 
-test.use({ testIdAttribute: 'data-test' });
+test.use({ testIdAttribute: 'data-test', baseURL: 'https://practicesoftwaretesting.com/' });
 type SortOption = 'Price (High - Low)' | 'Price (Low - High)';
 type SortDirection = 'asc' | 'desc';
 type SortOptionCase = {
@@ -70,7 +70,7 @@ test.describe('Toolshop', () => {
       (response) =>
         new URL(response.url()).pathname === '/products' && response.request().method() === 'QUERY',
     );
-    await page.goto('https://practicesoftwaretesting.com');
+    await page.goto('/');
     await expectOkResponse(responsePromise);
   });
 

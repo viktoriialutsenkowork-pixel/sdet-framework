@@ -1,4 +1,5 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
+test.use({ baseURL: 'https://demo.playwright.dev/todomvc/' });
 const ITEM1 = 'Item 1';
 const ITEM2 = 'Item 2';
 const ITEM3 = 'Item 3';
@@ -35,7 +36,7 @@ async function selectFilter(page: Page, filter: Filter): Promise<void> {
 
 test.describe('Todo app', () => {
   test.beforeEach('open application', async ({ page }) => {
-    await page.goto('https://demo.playwright.dev/todomvc');
+    await page.goto('');
   });
 
   test('adds a single todo', async ({ page }) => {

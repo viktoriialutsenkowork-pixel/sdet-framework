@@ -1,42 +1,38 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
+  //directory where my tests are located in the project and only this folder './tests' will be scanned for them.
   testDir: './tests',
-  /* Run tests in files in parallel */
+  // if true it runs tests in parallel inside tets file, with several workers. if false only test files are run in parallel, not tests inside
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  //fobids 'only' for test or test.describe, specifically in CI. locally it will work.
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
+  //if tests failes do retry. if it is ci then retry 2 times, if locally - no retry.
+  //for ci we have retries as we need to eliminate occasional env problems dring pipeline runs. but we collect traces to fix possible problems.
+  //no retries locally, so every failure shows up immediately while developing instead of being hidden by a passing retry
   retries: process.env.CI ? 2 : 0,
+  //amount of workers that are used in parallel execution. if it is ci then use 1 if it is locally then 4.
+  //here only 4 workers are used locally for stability of the run. With 11 workers the machine was overloaded and Firefox tests timed out
+  //for ci we are using 1 for stability as well
   workers: process.env.CI ? 1 : 4,
-  /* Opt out of parallel tests on CI. */
-  ...(process.env.CI ? { workers: 1 } : {}),
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  //report about runs in html format
   reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  //options that will be used for all tests
   use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    //save trace for all failed tests to use then in debugging
+    //we use retain on failure as we need to catch even ocsasional issues in ci or local envs, to have possibility investigate and fix. 
     trace: 'retain-on-failure',
+    //timeout for specific action like click, fill. after 10 sec, test shoul faiild as it is normal range to action to be finished. if an action takes longer, something is wrong: the app, the environment, or the test itself.
+    actionTimeout: 10_000,
+    //timeout for goto or other navigations, it is 15 sec that look also enough for normal working environment, it is more then action timeout as navigation annd full or part reload of page usually takes more then single action.
+    navigationTimeout: 15_000,
   },
-
-  /* Configure projects for major browsers */
+  //set of conditions based on what you are running your tests (browser, global preconditions, etc.)
   projects: [
     {
+      //project name, so that you can use specific name to run it from command line if needed
       name: 'chromium',
+      //options that will be used for tests in this project, use Chrome browser
       use: { ...devices['Desktop Chrome'] },
     },
 
@@ -49,32 +45,5 @@ export default defineConfig({
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });
