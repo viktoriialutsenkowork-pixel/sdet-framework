@@ -106,6 +106,42 @@ npx playwright test tests/todo.spec.ts --project=chromium --headed
 
 ---
 
+## Workers and parallelism *(Day 3)*
+
+| Command or setting | What it does |
+|---|---|
+| `npx playwright test --workers=4` | Run with 4 parallel workers for this run only (overrides the config) |
+| `workers: process.env.CI ? 1 : 4,` | In `playwright.config.ts`, at the top level of `defineConfig` (not inside `use`): 1 worker on CI, 4 locally |
+
+Without a `workers` setting, Playwright picks a default based on CPU cores. Too many workers can overload the machine and make correct tests time out. Watch CPU in Task Manager (`Ctrl+Shift+Esc`) while tuning.
+
+---
+
+## Linting with ESLint *(Day 3)*
+
+| Command | What it does |
+|---|---|
+| `npm install --save-dev eslint @eslint/js typescript-eslint eslint-plugin-playwright` | Install ESLint, typed TypeScript rules and Playwright rules |
+| `npm run lint` | Run ESLint on the project (script: `"lint": "eslint ."`) |
+| `npx eslint . --fix` | Auto-fix what ESLint can fix. **Always review what it changed** |
+
+Config file: `eslint.config.mjs` in the project root. VS Code extension: **ESLint** (publisher: Microsoft) shows findings as underlines.
+
+**Before every submission now:** `npm run lint`, `npm run typecheck`, `npx playwright test`.
+
+---
+
+## Package versions *(Day 3)*
+
+| Command | What it does |
+|---|---|
+| `npm install --save-dev typescript@6` | Install a specific major version (here: TypeScript 6, because typescript-eslint doesn't support 7 yet) |
+| `npx tsc -v` | Show the installed TypeScript version |
+
+**Peer dependency conflict (`ERESOLVE`):** a package needs a version range of another package that you don't have. Read the error, fix the version. **Don't use `--force` or `--legacy-peer-deps`**: they skip the check and usually lead to a crash later.
+
+---
+
 ## Running TypeScript files *(Day 2)*
 
 | Command | What it does |
@@ -113,7 +149,17 @@ npx playwright test tests/todo.spec.ts --project=chromium --headed
 | `npx tsx scratch/sort.ts` | Run a TypeScript file directly, for quick experiments |
 | `npm i -D tsx` | Install `tsx` if it's missing |
 
-Keep experiments in a `scratch/` folder and add `scratch/` to `.gitignore`.
+Keep experiments in a `scratch/` folder and add `scratch/` to `.gitignore`. Add `export {};` at the top of each scratch file, so files don't share one global scope and names like `main` can repeat *(Day 3)*.
+
+### Browser DevTools for network debugging *(Day 3)*
+| Step | How |
+|---|---|
+| Open DevTools | `F12` → **Network** tab |
+| Show only API calls | click the **Fetch/XHR** filter |
+| See only what your action triggers | click 🚫 to clear, then do the action |
+| Find one request | type part of the URL (e.g. `search`) in the filter box |
+| See what was sent and returned | click the request → **Payload** and **Response** tabs |
+| Reproduce timing bugs by hand | set **throttling** (e.g. "Slow 4G") |
 
 ---
 

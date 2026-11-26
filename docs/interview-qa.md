@@ -273,6 +273,150 @@ for (const item of items) {
 
 ---
 
+## Day 3 — Async JavaScript, network waits, ESLint
+
+### Warm-up (questions on Day 2 topics) — 18/25
+
+#### Q12. Name Playwright's four debugging tools and when you'd use each one.
+**My answer (score 2/5):** Trace viewer (full information about the run: screenshots, steps, errors, network, console) and `--debug` (live browser, stepping for deeper analysis). Didn't remember the others.
+
+**Model answer:**
+> - **UI mode** (`--ui`): developing tests locally — time-travel through steps, watch mode, locator picker.
+> - **Inspector** (`--debug`): step through a test line by line in a real browser.
+> - **`page.pause()`**: stop at one specific line and explore the live page (remove before committing).
+> - **Trace viewer**: failures you didn't watch, especially in CI — actions, before/after DOM snapshots, call log, console and network.
+
+**Remember:** UI mode = develop · `--debug` = step · `pause()` = stop at one point · trace = investigate afterwards.
+
+---
+
+#### Q13. What is the "old-state trap"? Give an example from your own tests.
+**My answer (score 3/5):** The test does an action without being sure of the page's default state, so an assertion can pass even without the action. The expected state must differ from the starting state. (No example given.)
+
+**Model answer:**
+> An assertion that can **already pass before the action happened**, so it proves nothing about the action. Examples from my tests: the product list already exists on the home page before filtering by Hammer; the "Bolt Cutters" heading exists on the search results page before opening the product; TodoMVC starts on the "All" filter. Fix: assert on something that's only true after the action, or move away from the default state first.
+
+**Remember:** "Could this already be true on the previous page?"
+
+---
+
+#### Q14. Why must values be read *inside* `expect.poll`, not before it?
+**My answer (score 5/5):** A value read before the poll is read once and never retried. `expect.poll` exists to wait for a condition that takes time; only when it's met does the poll end, otherwise it fails at the timeout.
+
+**Remember:** read changing values inside the retried function.
+
+---
+
+#### Q15. Why was `.first()` dangerous right after a search on Toolshop?
+**My answer (score 4/5):** The old product list was still displayed while we started working with it. Wait until the page shows products matching the condition before acting.
+
+**Precision:** the result label had already updated; the **list** hadn't re-rendered yet. `.first()` takes whatever is first *at that moment*.
+
+**Model answer:**
+> After a search, the result list re-renders. `.first()` resolves to whatever is first at that moment, which can still be a product from the old list. Fix: wait for a state that's only true after the search (all products match), or locate the product by name instead of by position.
+
+---
+
+#### Q16. What's wrong with `[10, 9, 100].sort()`, and how do you fix it?
+**My answer (score 2/5):** Sorts as strings (10, 100, 9); convert with `Number()` first. `sort` also mutates the array, so copy it or use `beSorted()`.
+
+**Corrections:** the elements are already numbers, so `Number()` changes nothing; the fix is a **compare function**. The non-mutating method is `toSorted()`.
+
+**Model answer:**
+> Without a compare function, `sort()` converts elements to strings and compares them alphabetically, giving `[10, 100, 9]`. Fix: `sort((a, b) => a - b)` for ascending, `b - a` for descending. `sort()` also mutates the original array; `toSorted()` returns a sorted copy, which matters when you compare a list with its sorted version.
+
+**Remember:** compare function · `a - b` ascending · `toSorted()` doesn't mutate.
+
+---
+
+### Interview drill — 20/30
+
+#### Q17. What does `await` actually do, and what happens to the calling code if an async function isn't awaited?
+**My answer (score 3/5):** `await` waits for the promise to be fulfilled or rejected; if fulfilled the code continues, if rejected it throws an error. If not awaited, the function finishes eventually, but code fails later and it's hard to tell what failed.
+
+**What was missing:** that `await` pauses **only the current function**, and what the caller concretely gets.
+
+**Model answer:**
+> `await` pauses **only the async function it's in** until the promise settles: fulfilled → continue with the value; rejected → throw the error at that line, where `try/catch` can catch it. Everything else keeps running. If a caller doesn't await an async function, it immediately gets a **pending promise** and moves on. Consequences: it uses the promise instead of the value (`Promise { 'done' }`), errors become **unhandled rejections** or surface somewhere unrelated, and in a test, the test can **end while its steps are still running** ("Test ended", "Target page has been closed"). Also: an async function runs synchronously until its first `await`.
+
+**From my own experience (Day 3):** Snippet C (`start`, `end`, `after await`) and the unhandled rejection crash in Exercise 1.3.
+
+---
+
+#### Q18. Explain the difference between `Promise.all` and `Promise.allSettled`, with an example from test automation for each.
+**My answer (score 4/5):** `all` succeeds only if all promises are fulfilled; if one fails it returns that failure without waiting for the rest. `allSettled` waits for all and gives every result. Example for `all`: preconditions — if one fails, fail the test immediately. Example for `allSettled`: removing test data at the end — the test shouldn't fail, but you still see every cleanup error.
+
+**Correction:** `Promise.all` doesn't *run* promises in parallel — they're already running from the moment they're created. `all` only **waits** for them. (Exercise 1.2: `await` inside the array made it sequential.)
+
+**Model answer:**
+> Both wait for several promises that are already running. `Promise.all` resolves with all values if every promise succeeds and **rejects with the first error** as soon as one fails (the others keep running, but their results are discarded). `Promise.allSettled` waits for **all** and returns each outcome as `{ status: 'fulfilled', value }` or `{ status: 'rejected', reason }`, never throwing. Use `all` for independent preconditions, such as creating test data via the API, where any failure should stop the test. Use `allSettled` for cleanup: try to delete everything, then report every failure.
+
+---
+
+#### Q19. Why do you start `waitForResponse` before the click? What goes wrong otherwise, and why might you not notice?
+**My answer (score 3/5):** The click can be too fast and the response arrives before you start waiting. Wait before the action, because a slow or fast application makes the test unstable.
+
+**Precision:** the cause isn't that the click is fast; it's that the **listener only sees responses arriving after it starts**.
+
+**Model answer:**
+> `waitForResponse` only sees responses that arrive **after it starts listening**. If you start it after the click, a response that arrived during the click is missed, and the wait times out. Correct pattern: create the promise (start listening) without awaiting, perform the action, then await the promise. You might not notice because a **slow server hides the bug**: if the response takes longer than the gap between click and listener, the test passes. It then fails in a faster environment, like a local Docker setup, and looks like an environment problem.
+
+**From my own experience (Day 3, Exercise 2.2):** with the listener moved after the click, all tests still passed against the public demo, because its responses take 200–300 ms.
+
+---
+
+#### Q20. When would you wait for a network response instead of a UI change? Why not just one of them?
+**My answer (score 3/5):** Wait for the network response to be sure the backend sent the right information, then for the UI to be sure it applied it. There can be a gap between the two. Not every action needs both — mostly time-consuming ones.
+
+**What was missing:** the diagnostic value, and concrete reasons to wait on the network.
+
+**Model answer:**
+> The UI assertion is the default, because it's what users see. I add a network wait when:
+> - I need the failure to **point to the right layer**: a timeout or 500 means backend; a 200 with no UI change means frontend
+> - the action has **no clear visible result** to wait for
+> - overlapping requests can cause **races**: waiting for the page's initial load before acting prevents a slow old response from overwriting a newer one
+> - I want to assert on the **status or payload**
+>
+> I keep both because they answer different questions: the response says the backend did its job; the UI says the user can see it. A 200 doesn't prove the UI works.
+
+**From my own experience (Day 3):** the initial-load `/products` response arrived 11 ms after the sort response and overwrote it. Waiting for the initial load in `beforeEach` fixed both the sort flake and the earlier search flake.
+
+---
+
+#### Q21. What kinds of bugs can a linter catch that TypeScript's type checker can't, and what can neither of them catch?
+**My answer (score 4/5):** The type checker checks types. The linter checks bad code patterns like missing awaits and unhandled promises — things that cause issues but aren't about types. Neither catches logic problems.
+
+**Model answer:**
+> | Layer | Catches | Example |
+> |---|---|---|
+> | Type checker | wrong types | `selectFilter(page, 'Done')` |
+> | Linter | valid but risky patterns | missing `await`, `waitForTimeout`, `page.pause()`, tests without assertions, `isVisible()` instead of web-first assertions, unsafe `any` |
+> | Neither: tests and code review | wrong logic, wrong expectations, timing races, environment issues | `postData()?.includes('"sort"') !== undefined` instead of `=== true` |
+>
+> Some bugs are caught by two linter rules at once (`missing-playwright-await` and `no-floating-promises`), which is useful defense in depth.
+
+---
+
+### Senior question: A teammate wants `waitForTimeout(2000)` after every navigation
+
+**Scenario:** a 400-test suite. A teammate proposes adding `waitForTimeout(2000)` after every navigation, "because it fixed the flaky tests". What's your position, what evidence do you bring, and what do you propose?
+
+**My answer (score 3/5):** Against it: it works for a given setup, but as soon as performance or configuration changes it causes problems, 2000 ms won't be enough, the number keeps increasing, and the suite gets slower. Better to wait for the backend or handle each situation properly, case by case.
+
+**What was missing:** numbers, evidence of root causes, a concrete plan, and acknowledging the teammate's real problem.
+
+**Model answer:**
+> "The flakiness is real, and the sleeps did reduce it, so the problem is worth solving. But fixed sleeps have three costs:
+> - **Time:** 400 tests × ~3 navigations × 2 s is about **40 minutes** of waiting per run, roughly 10 minutes even with 4 workers.
+> - **They don't fix the cause:** in our suite, traces showed three different causes — an app race between requests, a page not yet loaded, an overloaded machine. A sleep fixes none of them reliably.
+> - **They decay:** when the environment slows down, 2 s stops being enough, and the number creeps up.
+>
+> **Proposal:** take the most flaky tests, read their traces, and fix each cause with a condition-based wait (web-first assertions, a page-ready check, `waitForResponse`). Keep `no-wait-for-timeout` as a lint error. Track the flaky rate before and after. I'm happy to pair on the first few."
+
+**Remember:** acknowledge the problem · cost in numbers · evidence of real causes · concrete plan · prevention (lint) · measure the result.
+
+---
+
 ## Interview tips
 
 ### Learned on Day 1
@@ -285,3 +429,8 @@ for (const item of items) {
 - **Use your own experience.** "In my framework, a cart test failed because…" is far more convincing than a textbook answer.
 - **Process questions want a plan over time:** what you'd do first, next, and how you'd know it worked.
 - **Say *when*, not just *what*.** For every tool (`as const`, test IDs, data-driven tests), say when it's worth using and when it isn't.
+
+### Learned on Day 3
+- **Precision matters.** "The click is too fast" vs "the listener only sees later responses": interviewers notice the right mechanism.
+- **Bring numbers.** "40 minutes of sleeping per run" convinces more than "it's slow".
+- **In team disagreements, acknowledge the real problem first**, then propose a better solution and how you'd measure it.
