@@ -30,7 +30,7 @@ export default defineConfig({
     navigationTimeout: 15_000,
   },
   //set of conditions based on what you are running your tests (browser, global preconditions, etc.)
-  //six explicit projects are selected instead of generating them for sake of easy config reading 
+  //six explicit projects are selected instead of generating them for sake of easy config reading
   projects: [
     {
       //project name, so that you can use specific name to run it from command line if needed

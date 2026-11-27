@@ -73,7 +73,8 @@ test.describe('Toolshop', () => {
     await expectOkResponse(responsePromise);
   });
 
-  test('shows matching products when searching by name', async ({ page }) => {
+  //test is selected for smoke as it is quick and check main functionality, search of the products in application
+  test('shows matching products when searching by name', { tag: '@smoke' }, async ({ page }) => {
     const searchWord = 'pliers';
 
     await searchFor(page, searchWord);

@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke --project=toolshop-chromium --project=todo-chromium",
     "test:ui": "playwright test --ui",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",

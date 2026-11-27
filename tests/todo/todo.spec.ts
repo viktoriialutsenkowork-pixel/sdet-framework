@@ -38,7 +38,8 @@ test.describe('Todo app', () => {
     await page.goto('');
   });
 
-  test('adds a single todo', async ({ page }) => {
+  //thi test was selected for smoke as it is quick check that main functionality of application as additing todo to list works.
+  test('adds a single todo', { tag: '@smoke' }, async ({ page }) => {
     const todoTitleLocator = page.getByTestId('todo-title');
     await addTodos(page, [ITEM1]);
     await expect(todoTitleLocator).toHaveText([ITEM1]);
