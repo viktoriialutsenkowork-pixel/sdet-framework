@@ -1,6 +1,5 @@
 import { test, expect, type Page, type Response } from '@playwright/test';
 
-test.use({ testIdAttribute: 'data-test', baseURL: 'https://practicesoftwaretesting.com/' });
 type SortOption = 'Price (High - Low)' | 'Price (Low - High)';
 type SortDirection = 'asc' | 'desc';
 type SortOptionCase = {

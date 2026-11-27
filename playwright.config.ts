@@ -1,7 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+const TODO_URL = 'https://demo.playwright.dev/todomvc/';
+const TOOLSHOP_URL = 'https://practicesoftwaretesting.com/';
 
 export default defineConfig({
-  //directory where my tests are located in the project and only this folder './tests' will be scanned for them.
+  //fallback for tests location if testDir is not mentions in projects
   testDir: './tests',
   // if true it runs tests in parallel inside tets file, with several workers. if false only test files are run in parallel, not tests inside
   fullyParallel: true,
@@ -20,7 +22,7 @@ export default defineConfig({
   //options that will be used for all tests
   use: {
     //save trace for all failed tests to use then in debugging
-    //we use retain on failure as we need to catch even ocsasional issues in ci or local envs, to have possibility investigate and fix. 
+    //we use retain on failure as we need to catch even ocsasional issues in ci or local envs, to have possibility investigate and fix.
     trace: 'retain-on-failure',
     //timeout for specific action like click, fill. after 10 sec, test shoul faiild as it is normal range to action to be finished. if an action takes longer, something is wrong: the app, the environment, or the test itself.
     actionTimeout: 10_000,
@@ -28,22 +30,56 @@ export default defineConfig({
     navigationTimeout: 15_000,
   },
   //set of conditions based on what you are running your tests (browser, global preconditions, etc.)
+  //six explicit projects are selected instead of generating them for sake of easy config reading 
   projects: [
     {
       //project name, so that you can use specific name to run it from command line if needed
-      name: 'chromium',
+      name: 'todo-chromium',
+      //option that shows tests location for the project
+      testDir: './tests/todo',
       //options that will be used for tests in this project, use Chrome browser
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], baseURL: TODO_URL },
     },
 
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      name: 'todo-firefox',
+      testDir: './tests/todo',
+      use: { ...devices['Desktop Firefox'], baseURL: TODO_URL },
     },
 
     {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      name: 'todo-webkit',
+      testDir: './tests/todo',
+      use: { ...devices['Desktop Safari'], baseURL: TODO_URL },
+    },
+    {
+      name: 'toolshop-chromium',
+      testDir: './tests/toolshop',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: TOOLSHOP_URL,
+        testIdAttribute: 'data-test',
+      },
+    },
+
+    {
+      name: 'toolshop-firefox',
+      testDir: './tests/toolshop',
+      use: {
+        ...devices['Desktop Firefox'],
+        baseURL: TOOLSHOP_URL,
+        testIdAttribute: 'data-test',
+      },
+    },
+
+    {
+      name: 'toolshop-webkit',
+      testDir: './tests/toolshop',
+      use: {
+        ...devices['Desktop Safari'],
+        baseURL: TOOLSHOP_URL,
+        testIdAttribute: 'data-test',
+      },
     },
   ],
 });

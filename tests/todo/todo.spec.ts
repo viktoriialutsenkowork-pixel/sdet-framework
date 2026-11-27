@@ -1,5 +1,4 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-test.use({ baseURL: 'https://demo.playwright.dev/todomvc/' });
 const ITEM1 = 'Item 1';
 const ITEM2 = 'Item 2';
 const ITEM3 = 'Item 3';
