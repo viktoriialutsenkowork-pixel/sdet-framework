@@ -5,36 +5,35 @@ Grouped by topic, with the day each one was introduced.
 
 ---
 
-## Checking installed tools _(Day 1)_
+## Checking installed tools *(Day 1)*
 
-| Command         | What it does                       |
-| --------------- | ---------------------------------- |
-| `node -v`       | Show the installed Node.js version |
-| `npm -v`        | Show the installed npm version     |
-| `git --version` | Show the installed Git version     |
+| Command | What it does |
+|---|---|
+| `node -v` | Show the installed Node.js version |
+| `npm -v` | Show the installed npm version |
+| `git --version` | Show the installed Git version |
 
 ---
 
-## Project setup _(Day 1)_
+## Project setup *(Day 1)*
 
-| Command                               | What it does                                                                   |
-| ------------------------------------- | ------------------------------------------------------------------------------ |
-| `mkdir sdet-framework`                | Create the project folder                                                      |
-| `cd sdet-framework`                   | Move into the project folder                                                   |
-| `git init`                            | Start a Git repository in the current folder                                   |
-| `npm init -y`                         | Create `package.json` with default values (`-y` = yes to all questions)        |
-| `npm init playwright@latest`          | Install Playwright Test, browsers, config file and example tests (interactive) |
-| `npm i -D typescript tsx @types/node` | Install dev dependencies: TypeScript compiler, `.ts` runner, Node.js types     |
-| `npx tsc --init`                      | Create `tsconfig.json`                                                         |
+| Command | What it does |
+|---|---|
+| `mkdir sdet-framework` | Create the project folder |
+| `cd sdet-framework` | Move into the project folder |
+| `git init` | Start a Git repository in the current folder |
+| `npm init -y` | Create `package.json` with default values (`-y` = yes to all questions) |
+| `npm init playwright@latest` | Install Playwright Test, browsers, config file and example tests (interactive) |
+| `npm i -D typescript tsx @types/node` | Install dev dependencies: TypeScript compiler, `.ts` runner, Node.js types |
+| `npx tsc --init` | Create `tsconfig.json` |
 
 **`npm` vs `npx`:** `npm` installs and manages packages and runs scripts from `package.json`. `npx` runs a package's command-line tool (for example `playwright` or `tsc`) from `node_modules` without installing it globally.
 
 ---
 
-## npm scripts _(Day 1)_
+## npm scripts *(Day 1)*
 
 Defined in the `"scripts"` section of `package.json`:
-
 ```json
 "scripts": {
   "test": "playwright test",
@@ -43,67 +42,63 @@ Defined in the `"scripts"` section of `package.json`:
 }
 ```
 
-| Command             | What it does                                                                           |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| `npm test`          | Run all tests in all configured browsers (`npm test` is a shortcut for `npm run test`) |
-| `npm run test:ui`   | Open Playwright UI mode                                                                |
-| `npm run typecheck` | Type-check all TypeScript files without producing output files                         |
+| Command | What it does |
+|---|---|
+| `npm test` | Run all tests in all configured browsers (`npm test` is a shortcut for `npm run test`) |
+| `npm run test:ui` | Open Playwright UI mode |
+| `npm run typecheck` | Type-check all TypeScript files without producing output files |
 
 **Always run `npm test` and `npm run typecheck` before submitting code for review.**
 
 ---
 
-## Running Playwright tests _(Day 1)_
+## Running Playwright tests *(Day 1)*
 
-| Command                                                      | What it does                                                                                                               |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `npx playwright test`                                        | Run all tests in all browsers                                                                                              |
-| `npx playwright test tests/todo.spec.ts`                     | Run one test file                                                                                                          |
-| `npx playwright test tests/todo.spec.ts --project=chromium`  | Run one file in one browser only                                                                                           |
-| `npx playwright test --headed`                               | Run with a visible browser window                                                                                          |
-| `npx playwright test --ui`                                   | Open UI mode: time-travel, watch mode, locator picker                                                                      |
-| `npx playwright show-report`                                 | Open the HTML report of the last run                                                                                       |
+| Command | What it does |
+|---|---|
+| `npx playwright test` | Run all tests in all browsers |
+| `npx playwright test tests/todo.spec.ts` | Run one test file |
+| `npx playwright test tests/todo.spec.ts --project=chromium` | Run one file in one browser only |
+| `npx playwright test --headed` | Run with a visible browser window |
+| `npx playwright test --ui` | Open UI mode: time-travel, watch mode, locator picker |
+| `npx playwright show-report` | Open the HTML report of the last run |
 | `npx playwright codegen https://demo.playwright.dev/todomvc` | Open a browser that records your actions and suggests locators (for discovering locators, **not** for writing final tests) |
 
 Options combine freely, for example:
-
 ```powershell
 npx playwright test tests/todo.spec.ts --project=chromium --headed
 ```
 
-### Selecting and repeating tests _(Day 2)_
-
-| Command                                                                          | What it does                                                                 |
-| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `npx playwright test -g "clears completed"`                                      | Run only tests whose name contains this text (`-g` = grep)                   |
-| `npx playwright test --repeat-each=10`                                           | Run each test 10 times. A quick way to find flaky tests before they reach CI |
-| `npx playwright test -g "shows 1 in the cart" --project=webkit --repeat-each=30` | Example: one test, one browser, 30 times                                     |
+### Selecting and repeating tests *(Day 2)*
+| Command | What it does |
+|---|---|
+| `npx playwright test -g "clears completed"` | Run only tests whose name contains this text (`-g` = grep) |
+| `npx playwright test --repeat-each=10` | Run each test 10 times. A quick way to find flaky tests before they reach CI |
+| `npx playwright test -g "shows 1 in the cart" --project=webkit --repeat-each=30` | Example: one test, one browser, 30 times |
 
 ---
 
-## Debugging _(Day 2)_
+## Debugging *(Day 2)*
 
-| Command                                                               | What it does                                                                                          |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `npx playwright test --trace on`                                      | Record a trace for every test in this run                                                             |
-| `npx playwright test --trace retain-on-failure`                       | Record traces, but keep only those of failed tests. Best for catching rare flakes                     |
-| `npx playwright show-trace <path-to-trace.zip>`                       | Open a trace file directly (traces are also linked from the HTML report and saved in `test-results/`) |
-| `npx playwright test --debug`                                         | Open the Playwright Inspector and step through the test line by line                                  |
-| `npx playwright test --headed` with `await page.pause();` in the test | Stop at that line and explore the live page. **Remove `page.pause()` before committing**              |
-| `npx playwright codegen https://practicesoftwaretesting.com`          | Discover locators on any site                                                                         |
+| Command | What it does |
+|---|---|
+| `npx playwright test --trace on` | Record a trace for every test in this run |
+| `npx playwright test --trace retain-on-failure` | Record traces, but keep only those of failed tests. Best for catching rare flakes |
+| `npx playwright show-trace <path-to-trace.zip>` | Open a trace file directly (traces are also linked from the HTML report and saved in `test-results/`) |
+| `npx playwright test --debug` | Open the Playwright Inspector and step through the test line by line |
+| `npx playwright test --headed` with `await page.pause();` in the test | Stop at that line and explore the live page. **Remove `page.pause()` before committing** |
+| `npx playwright codegen https://practicesoftwaretesting.com` | Discover locators on any site |
 
 ### Trace settings in `playwright.config.ts`
-
-| Value                 | Records a trace                          |
-| --------------------- | ---------------------------------------- |
-| `'off'`               | never                                    |
-| `'on'`                | for every test                           |
-| `'on-first-retry'`    | only on the first retry of a failed test |
-| `'on-all-retries'`    | on every retry                           |
-| `'retain-on-failure'` | for every test, kept only if it fails    |
+| Value | Records a trace |
+|---|---|
+| `'off'` | never |
+| `'on'` | for every test |
+| `'on-first-retry'` | only on the first retry of a failed test |
+| `'on-all-retries'` | on every retry |
+| `'retain-on-failure'` | for every test, kept only if it fails |
 
 ### How to read a trace
-
 1. **Actions list:** find the first red step.
 2. **Before/After snapshots:** what did the page look like at that moment?
 3. **Call log:** what was Playwright waiting for, and for how long?
@@ -111,24 +106,83 @@ npx playwright test tests/todo.spec.ts --project=chromium --headed
 
 ---
 
-## Workers and parallelism _(Day 3)_
+## Projects, tags and subsets *(Day 4)*
 
-| Command or setting                 | What it does                                                                                                |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `npx playwright test --workers=4`  | Run with 4 parallel workers for this run only (overrides the config)                                        |
+| Command | What it does |
+|---|---|
+| `npx playwright test --list` | List the tests that would run, without running them. **Check it after every config change** |
+| `npx playwright test --project=todo-chromium` | Run one project |
+| `npx playwright test --project=todo-chromium --project=toolshop-chromium` | Run several projects |
+| `npx playwright test --grep '@smoke'` | Run only tests whose full title matches (tags, describe names, test names) |
+| `npx playwright test --grep-invert '@slow'` | Run everything **except** the matches |
+| `npm run test:smoke` | Smoke tests, Chromium only (script: `playwright test --grep @smoke --project=toolshop-chromium --project=todo-chromium`) |
+
+Tag a test: `test('name', { tag: '@smoke' }, async ({ page }) => { ... });`
+
+### Quoting `@` on Windows
+| Where | `@smoke` | `'@smoke'` |
+|---|---|---|
+| PowerShell, typed directly | ❌ `@` is special (splatting) | ✅ |
+| npm script (runs in cmd.exe on Windows) | ✅ | ❌ quotes become part of the text → "No tests found" |
+| bash (Linux, macOS, CI) | ✅ | ✅ |
+
+**Always run an npm script itself to verify it.**
+
+---
+
+## Config reference *(Day 4)*
+
+| Setting | Level | Default |
+|---|---|---|
+| `timeout` | top level / project | 30 s per test |
+| `expect: { timeout }` | top level | 5 s per assertion |
+| `use.actionTimeout` | `use` | none |
+| `use.navigationTimeout` | `use` | none |
+| `workers`, `retries`, `reporter`, `fullyParallel`, `forbidOnly` | top level | — |
+| `baseURL`, `testIdAttribute`, `trace`, `screenshot`, `video` | `use` | — |
+
+Per-file overrides: `test.use({ baseURL, testIdAttribute, ... })` for browser options; `test.describe.configure({ timeout })` for a slow file; `test.setTimeout(ms)` inside one test.
+
+**URL resolution with `baseURL`:** `goto('/')` = site root; `goto('')` = the base itself; for apps under a path, end `baseURL` with `/`.
+
+---
+
+## Formatting with Prettier *(Day 4)*
+
+| Command | What it does |
+|---|---|
+| `npm run format` | Format all files (`prettier --write .`) |
+| `npm run format:check` | Check formatting without changing anything; for CI (`prettier --check .`) |
+| `npx prettier --find-config-path <file>` | Show which config file Prettier uses for a file |
+
+Config: `.prettierrc.json`. VS Code: extension **Prettier - Code formatter**; team settings in `.vscode/settings.json`:
+```json
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
+}
+```
+
+---
+
+## Workers and parallelism *(Day 3)*
+
+| Command or setting | What it does |
+|---|---|
+| `npx playwright test --workers=4` | Run with 4 parallel workers for this run only (overrides the config) |
 | `workers: process.env.CI ? 1 : 4,` | In `playwright.config.ts`, at the top level of `defineConfig` (not inside `use`): 1 worker on CI, 4 locally |
 
 Without a `workers` setting, Playwright picks a default based on CPU cores. Too many workers can overload the machine and make correct tests time out. Watch CPU in Task Manager (`Ctrl+Shift+Esc`) while tuning.
 
 ---
 
-## Linting with ESLint _(Day 3)_
+## Linting with ESLint *(Day 3)*
 
-| Command                                                                               | What it does                                                    |
-| ------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `npm install --save-dev eslint @eslint/js typescript-eslint eslint-plugin-playwright` | Install ESLint, typed TypeScript rules and Playwright rules     |
-| `npm run lint`                                                                        | Run ESLint on the project (script: `"lint": "eslint ."`)        |
-| `npx eslint . --fix`                                                                  | Auto-fix what ESLint can fix. **Always review what it changed** |
+| Command | What it does |
+|---|---|
+| `npm install --save-dev eslint @eslint/js typescript-eslint eslint-plugin-playwright` | Install ESLint, typed TypeScript rules and Playwright rules |
+| `npm run lint` | Run ESLint on the project (script: `"lint": "eslint ."`) |
+| `npx eslint . --fix` | Auto-fix what ESLint can fix. **Always review what it changed** |
 
 Config file: `eslint.config.mjs` in the project root. VS Code extension: **ESLint** (publisher: Microsoft) shows findings as underlines.
 
@@ -136,98 +190,94 @@ Config file: `eslint.config.mjs` in the project root. VS Code extension: **ESLin
 
 ---
 
-## Package versions _(Day 3)_
+## Package versions *(Day 3)*
 
-| Command                               | What it does                                                                                           |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Command | What it does |
+|---|---|
 | `npm install --save-dev typescript@6` | Install a specific major version (here: TypeScript 6, because typescript-eslint doesn't support 7 yet) |
-| `npx tsc -v`                          | Show the installed TypeScript version                                                                  |
+| `npx tsc -v` | Show the installed TypeScript version |
 
 **Peer dependency conflict (`ERESOLVE`):** a package needs a version range of another package that you don't have. Read the error, fix the version. **Don't use `--force` or `--legacy-peer-deps`**: they skip the check and usually lead to a crash later.
 
 ---
 
-## Running TypeScript files _(Day 2)_
+## Running TypeScript files *(Day 2)*
 
-| Command                   | What it does                                          |
-| ------------------------- | ----------------------------------------------------- |
+| Command | What it does |
+|---|---|
 | `npx tsx scratch/sort.ts` | Run a TypeScript file directly, for quick experiments |
-| `npm i -D tsx`            | Install `tsx` if it's missing                         |
+| `npm i -D tsx` | Install `tsx` if it's missing |
 
-Keep experiments in a `scratch/` folder and add `scratch/` to `.gitignore`. Add `export {};` at the top of each scratch file, so files don't share one global scope and names like `main` can repeat _(Day 3)_.
+Keep experiments in a `scratch/` folder and add `scratch/` to `.gitignore`. Add `export {};` at the top of each scratch file, so files don't share one global scope and names like `main` can repeat *(Day 3)*.
 
-### Browser DevTools for network debugging _(Day 3)_
-
-| Step                               | How                                                    |
-| ---------------------------------- | ------------------------------------------------------ |
-| Open DevTools                      | `F12` → **Network** tab                                |
-| Show only API calls                | click the **Fetch/XHR** filter                         |
-| See only what your action triggers | click 🚫 to clear, then do the action                  |
-| Find one request                   | type part of the URL (e.g. `search`) in the filter box |
-| See what was sent and returned     | click the request → **Payload** and **Response** tabs  |
-| Reproduce timing bugs by hand      | set **throttling** (e.g. "Slow 4G")                    |
+### Browser DevTools for network debugging *(Day 3)*
+| Step | How |
+|---|---|
+| Open DevTools | `F12` → **Network** tab |
+| Show only API calls | click the **Fetch/XHR** filter |
+| See only what your action triggers | click 🚫 to clear, then do the action |
+| Find one request | type part of the URL (e.g. `search`) in the filter box |
+| See what was sent and returned | click the request → **Payload** and **Response** tabs |
+| Reproduce timing bugs by hand | set **throttling** (e.g. "Slow 4G") |
 
 ---
 
-## Common command mistakes _(Day 2)_
-
-| Mistake             | Why it fails                                               | Correct             |
-| ------------------- | ---------------------------------------------------------- | ------------------- |
+## Common command mistakes *(Day 2)*
+| Mistake | Why it fails | Correct |
+|---|---|---|
 | `npx run typecheck` | `npx` runs a package's tool; there is no tool called `run` | `npm run typecheck` |
 
 ---
 
-## Git _(Day 1)_
+## Git *(Day 1)*
 
 ### Everyday workflow
-
-| Command                         | What it does                                              |
-| ------------------------------- | --------------------------------------------------------- |
-| `git status`                    | Show changed and new files. **Check before every commit** |
-| `git add .`                     | Stage all changes in the current folder                   |
-| `git add PROGRESS.md`           | Stage one specific file                                   |
-| `git add -A`                    | Stage all changes, **including deleted files** _(Day 2)_  |
-| `git commit -m "type: message"` | Commit staged changes with a message                      |
-| `git push`                      | Upload commits to GitHub                                  |
-| `git log --oneline -3`          | Show the last 3 commits, one line each                    |
+| Command | What it does |
+|---|---|
+| `git status` | Show changed and new files. **Check before every commit** |
+| `git add .` | Stage all changes in the current folder |
+| `git add PROGRESS.md` | Stage one specific file |
+| `git add -A` | Stage all changes, **including deleted files** *(Day 2)* |
+| `git mv old/path new/path` | Move or rename a file so Git keeps its history. Commit a move on its own *(Day 4)* |
+| `git rm path` | Delete a file and stage the deletion *(Day 4)* |
+| `git commit -m "type: message"` | Commit staged changes with a message |
+| `git push` | Upload commits to GitHub |
+| `git log --oneline -3` | Show the last 3 commits, one line each |
 
 ### First-time connection to GitHub
-
-| Command                                                             | What it does                                                    |
-| ------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `git branch -M main`                                                | Rename the current branch to `main`                             |
-| `git remote add origin https://github.com/<you>/sdet-framework.git` | Connect the local repo to GitHub                                |
-| `git push -u origin main`                                           | First push; `-u` remembers the target, so later just `git push` |
+| Command | What it does |
+|---|---|
+| `git branch -M main` | Rename the current branch to `main` |
+| `git remote add origin https://github.com/<you>/sdet-framework.git` | Connect the local repo to GitHub |
+| `git push -u origin main` | First push; `-u` remembers the target, so later just `git push` |
 
 ### Fixing the last commit
-
-| Command                               | What it does                                                                                                            |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `git commit --amend -m "new message"` | Replace the message of the most recent commit                                                                           |
-| `git push --force-with-lease`         | Push a rewritten commit; only overwrites if nobody else pushed. **Only on your own branches, never on a shared `main`** |
+| Command | What it does |
+|---|---|
+| `git commit --amend -m "new message"` | Replace the message of the most recent commit |
+| `git push --force-with-lease` | Push a rewritten commit; only overwrites if nobody else pushed. **Only on your own branches, never on a shared `main`** |
 
 ### Commit message types (Conventional Commits)
-
-| Type        | Use for                                 | Example                                      |
-| ----------- | --------------------------------------- | -------------------------------------------- |
-| `feat:`     | New functionality                       | `feat: add test user factory`                |
-| `fix:`      | Bug fix                                 | `fix: make user emails unique`               |
-| `test:`     | Adding or changing tests                | `test: add todo app tests`                   |
+| Type | Use for | Example |
+|---|---|---|
+| `feat:` | New functionality | `feat: add test user factory` |
+| `fix:` | Bug fix | `fix: make user emails unique` |
+| `test:` | Adding or changing tests | `test: add todo app tests` |
 | `refactor:` | Restructuring without changing behavior | `refactor: clean up todo tests after review` |
-| `docs:`     | Documentation only                      | `docs: day 1 progress`                       |
-| `chore:`    | Setup, config, tooling                  | `chore: set up Playwright with TypeScript`   |
+| `docs:` | Documentation only | `docs: day 1 progress` |
+| `chore:` | Setup, config, tooling | `chore: set up Playwright with TypeScript` |
 
 Format: lowercase, imperative ("add", not "added"), no full stop. One kind of change per commit.
 
 ---
 
-## VS Code shortcuts _(Day 1)_
+## VS Code shortcuts *(Day 1)*
 
-| Shortcut       | What it does                          |
-| -------------- | ------------------------------------- |
-| ``Ctrl+` ``    | Open or close the integrated terminal |
-| `Ctrl+Shift+X` | Open the Extensions view              |
-| `Ctrl+Shift+P` | Open the Command Palette              |
-| `Ctrl+Shift+V` | Preview a Markdown file               |
-| `F12`          | Go to definition                      |
-| `Ctrl+.`       | Show quick fixes for an error         |
+| Shortcut | What it does |
+|---|---|
+| ``Ctrl+` `` | Open or close the integrated terminal |
+| `Ctrl+Shift+X` | Open the Extensions view |
+| `Ctrl+Shift+P` | Open the Command Palette |
+| `Ctrl+Shift+V` | Preview a Markdown file |
+| `F12` | Go to definition |
+| `Ctrl+.` | Show quick fixes for an error |
