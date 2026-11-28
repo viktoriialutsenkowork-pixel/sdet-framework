@@ -26,7 +26,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['tests/**'],
+    files: ['tests/**', 'src/**'],
     extends: [playwright.configs['flat/recommended']],
     rules: {
       'playwright/expect-expect': [
